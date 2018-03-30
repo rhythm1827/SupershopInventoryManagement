@@ -1,0 +1,121 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+int Xmin, Ymin, Xmax, Ymax;
+
+int computeCode(double x, double y)
+{
+/*
+    INSIDE = 0; // 0000
+    int LEFT = 1;   // 0001
+    RIGHT = 2;  // 0010
+    BOTTOM = 4; // 0100
+    TOP = 8;    // 1000
+*/
+    int ans = 0;
+    if (x < Xmin)
+        ans |= 1;
+    else if (x > Xmax)
+        ans |= 2;
+    if (y < Ymin)
+        ans |= 4;
+    else if (y > Ymax)
+        ans |= 8;
+    return ans;
+}
+
+void cohenLineClipping(double x0, double y0, double x1, double y1)
+{
+    double x,y;
+    int code0 = computeCode(x0, y0);
+    int code1 = computeCode(x1, y1);
+    int code2 = code0&code1;
+    printf("%d %d %d\n",code0,code1,code2);
+    bool accept = false, done = false;
+    do
+    {
+        if ((code0 == 0) && (code1 == 0))
+        {
+            accept = true;
+            done = true;
+            break;
+        }
+        else if (code0 & code1)
+        {
+            done = true;
+        }
+        else
+        {
+            int outcode;
+            if (code0 != 0)
+                outcode = code0;
+            else
+                outcode = code1;
+            if (outcode & 8)
+            {
+                x = x0 + (x1 - x0) * (Ymax - y0) / (y1 - y0);
+                y = Ymax;
+            }
+            else if (outcode & 4)
+            {
+                x = x0 + (x1 - x0) * (Ymin - y0) / (y1 - y0);
+                y = Ymin;
+            }
+            else if (outcode & 2)
+            {
+                y = y0 + (y1 - y0) * (Xmax - x0) / (x1 - x0);
+                x = Xmax;
+            }
+            else if (outcode & 1)
+            {
+                y = y0 + (y1 - y0) * (Xmin - x0) / (x1 - x0);
+                x = Xmin;
+            }
+            if (outcode == code0)
+            {
+                x0 = x;
+                y0 = y;
+                code0 = computeCode(x0, y0);
+            }
+            else
+            {
+                x1 = x;
+                y1 = y;
+                code1 = computeCode(x1, y1);
+            }
+        }
+    }while(done == false);
+    if (accept == true)
+    {
+        printf("Line accepted from (%d, %d) to (%d, %d)\nand touching points are given below.\n", (int)x0, (int)y0, (int)x1, (int)y1);
+        midPoint(x0, y0, x1, y1);
+    }
+    else
+        printf("Line rejected due to both endpoints are outside rectangle or in same region.\n");
+}
+
+int main()
+{
+    double x0, y0, x1, y1;
+    Xmin=10, Ymin=10, Xmax=50, Ymax=50;
+    int n;
+    for(;;)
+    {
+        printf("|  Enter points  |\n");
+        printf("x0: ");
+        scanf("%lf",&x0);
+        printf("\ty0: ");
+        scanf("%lf",&y0);
+        printf("x1: ");
+        scanf("%lf",&x1);
+        printf("\ty1: ");
+        scanf("%lf",&y1);
+        cohenLineClipping(x0, y0, x1, y1);
+        printf("Enter 0 for break and any other key for new clipping!!");
+        scanf("%d",&n);
+        if(n==0)
+            break;
+    }
+    return 0;
+}
+
